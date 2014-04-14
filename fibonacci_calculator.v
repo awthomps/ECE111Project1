@@ -8,47 +8,47 @@ module fibonacci_calculator(input_s, reset_n, begin_fibo, clk, done, fibo_out);
 	output [15:0] fibo_out;
 	
 	
-	wire [15:0] curr_sum_n;
+	
 	reg [15:0] curr_sum_r, last_sum_r;
-	reg active_r, done_r;
-	integer counter, counter_n;
+	reg active_r;
+	reg [4:0] counter_r;
+	
+	wire [15:0] curr_sum_n;
+	wire [4:0] counter_n;
 	wire active_n;
 	
 	
+	//combinational logic:
+	assign fibo_out = curr_sum_r; //set the output value to be the curr_sum register
+	assign done = active_n ? 1'b0 : 1'b1; //check if we are done or not
+	assign counter_n = counter_r + 1; //set next counter value
+	assign active_n = (counter_n == input_s)? 1'b0 : 1'b1; //check if we are active;
+	assign curr_sum_n = last_sum_r + curr_sum_r; // calculate the next sum
 	
-	assign fibo_out = curr_sum_r;
-	assign done = done_r;
-	assign active_n = (counter != input_s); //check if we are active;
-	assign curr_sum_n = last_sum_r + curr_sum_r;
-	
-	always@ (*)
+	//sequential logic:
+	always @ (posedge clk or negedge reset_n)
 	begin
-		
-	end
-	
-	always @ (posedge clk)
-	begin
-		if(reset_n == 1)
+		if(!reset_n)
 		begin
+			//reset all registers
 			curr_sum_r <= 1;
 			last_sum_r <= 0;
-			counter <= 1;
-			active_r <= 0;
-			done_r <= 0;
+			counter_r <= 0;
+			active_r <= 1'b0;
 		end
 		else
 		begin
 			//check if begin signal has come:
-			if(begin_fibo) active_r <= 1;
+			if(begin_fibo && ~active_n) active_r <= 1'b1;
 			else
 			begin
-				if(active_r)
+				// pass next data to registers if in active state:
+				if(active_n)
 				begin
 					curr_sum_r <= curr_sum_n; //get next sum
 					last_sum_r <= curr_sum_r; //send curr_sum down
-					counter <= counter_n; // increment counter
-					active_r <= active_n;
-					done_r <= (~active_n & ~ begin_fibo);
+					counter_r <= counter_n; // increment counter
+					active_r <= active_n; //set next active state
 				end
 			end
 		end
