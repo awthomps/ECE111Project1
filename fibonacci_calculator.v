@@ -1,3 +1,9 @@
+/**
+ * module name: fibonacci_calculator.v
+ * author: Andrei Thompson
+ * PID: A09597901
+ */
+
 module fibonacci_calculator(input_s, reset_n, begin_fibo, clk, done, fibo_out);
 	input [4:0] input_s;
 	input reset_n;
